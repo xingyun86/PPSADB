@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{3AB65D99-7A8D-4F12-8C48-DDAB933F0C40}</ProjectGuid>
+    <RootNamespace>Adb</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>../sources/Adb;../sources/ThirdParty/include;../sources/ThirdParty/include/linux;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;ADB_HOST;HAVE_WINSOCK;DEBUG_PACKETS;HAVE_WIN32_IPC;HAVE_WIN32_PROC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>zlib1.lib;ws2_32.lib;libeay32.lib;ssleay32.lib;AdbWinApi.lib;AdbWinUsbApi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../sources/ThirdParty/lib;../sources/ThirdParty/lib/AdbWinApi/Debug;../sources/ThirdParty/lib/AdbWinUsbApi/Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>../sources/Adb;../sources/ThirdParty/include;../sources/ThirdParty/include/linux;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;ADB_HOST;HAVE_WINSOCK;HAVE_WIN32_IPC;HAVE_WIN32_PROC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>zlib1.lib;ws2_32.lib;libeay32.lib;ssleay32.lib;AdbWinApi.lib;AdbWinUsbApi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../sources/ThirdParty/lib;../sources/ThirdParty/lib/AdbWinApi/Release;../sources/ThirdParty/lib/AdbWinUsbApi/Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>No</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\sources\Adb\adb.cpp" />
+    <ClCompile Include="..\sources\Adb\adb_auth_host.cpp" />
+    <ClCompile Include="..\sources\Adb\adb_client.cpp" />
+    <ClCompile Include="..\sources\Adb\centraldir.cpp" />
+    <ClCompile Include="..\sources\Adb\commandline.cpp" />
+    <ClCompile Include="..\sources\Adb\console.cpp" />
+    <ClCompile Include="..\sources\Adb\file_sync_client.cpp" />
+    <ClCompile Include="..\sources\Adb\get_my_path_windows.cpp" />
+    <ClCompile Include="..\sources\Adb\list.cpp" />
+    <ClCompile Include="..\sources\Adb\services.cpp" />
+    <ClCompile Include="..\sources\Adb\sockets.cpp" />
+    <ClCompile Include="..\sources\Adb\sysdeps_win32.cpp" />
+    <ClCompile Include="..\sources\Adb\transport.cpp" />
+    <ClCompile Include="..\sources\Adb\transport_local.cpp" />
+    <ClCompile Include="..\sources\Adb\transport_usb.cpp" />
+    <ClCompile Include="..\sources\Adb\usb_vendors.cpp" />
+    <ClCompile Include="..\sources\Adb\usb_windows.cpp" />
+    <ClCompile Include="..\sources\Adb\utils.cpp" />
+    <ClCompile Include="..\sources\Adb\zipfile.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\sources\Adb\adb.h" />
+    <ClInclude Include="..\sources\Adb\adb_auth.h" />
+    <ClInclude Include="..\sources\Adb\adb_client.h" />
+    <ClInclude Include="..\sources\Adb\fdevent.h" />
+    <ClInclude Include="..\sources\Adb\file_sync_service.h" />
+    <ClInclude Include="..\sources\Adb\mutex_list.h" />
+    <ClInclude Include="..\sources\Adb\private.h" />
+    <ClInclude Include="..\sources\Adb\sysdeps.h" />
+    <ClInclude Include="..\sources\Adb\transport.h" />
+    <ClInclude Include="..\sources\Adb\usb_vendors.h" />
+    <ClInclude Include="..\sources\Adb\utils.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
