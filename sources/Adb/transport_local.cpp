@@ -442,3 +442,32 @@ int init_socket_transport(atransport *t, int s, int adb_port, int local)
 #endif
     return fail;
 }
+
+int pps_server_socket(int port)
+{
+	int serverfd, fd = 0;
+	struct sockaddr addr;
+	socklen_t alen;
+
+	D("transport: zs_server_socket() starting\n");
+
+	serverfd = socket_inaddr_any_server(port, SOCK_STREAM);
+	if (serverfd < 0) {
+		D("server: cannot bind socket yet\n");
+		return fd;
+	}
+	close_on_exec(serverfd);
+
+	alen = sizeof(addr);
+	D("server: trying to get new connection from %d\n", port);
+	fd = adb_socket_accept(serverfd, &addr, &alen);
+	if (fd >= 0) {
+		D("server: new connection on fd %d\n", fd);
+		close_on_exec(fd);
+		disable_tcp_nagle(fd);
+		//register_socket_transport(fd, "host", port, 1);
+	}
+
+	D("transport: zs_server_socket() exiting\n");
+	return fd;
+}

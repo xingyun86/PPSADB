@@ -10,14 +10,14 @@ static int  connect_to_console(void)
     port = adb_get_emulator_console_port();
     if (port < 0) {
         if (port == -2)
-            fprintf(stderr, "error: more than one emulator detected. use -s option\n");
+			pps_fprintf/*fprintf*/(stderr, "error: more than one emulator detected. use -s option\n");
         else
-            fprintf(stderr, "error: no emulator detected\n");
+			pps_fprintf/*fprintf*/(stderr, "error: no emulator detected\n");
         return -1;
     }
     fd = socket_loopback_client( port, SOCK_STREAM );
     if (fd < 0) {
-        fprintf(stderr, "error: could not connect to TCP port %d\n", port);
+		pps_fprintf/*fprintf*/(stderr, "error: could not connect to TCP port %d\n", port);
         return -1;
     }
     return  fd;

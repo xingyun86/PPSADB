@@ -87,7 +87,7 @@ static void END()
     if (t == 0)  /* prevent division by 0 :-) */
         t = 1000000;
 
-    fprintf(stderr,"%lld KB/s (%lld bytes in %lld.%03llds)\n",
+	pps_fprintf/*fprintf*/(stderr,"%lld KB/s (%lld bytes in %lld.%03llds)\n",
             ((total_bytes * 1000000LL) / t) / 1024LL,
             total_bytes, (t / 1000000LL), (t % 1000000LL) / 1000LL);
 }
@@ -243,7 +243,7 @@ static int write_data_file(int fd, const char *path, syncsendbuf *sbuf)
 
     lfd = adb_open(path, O_RDONLY);
     if(lfd < 0) {
-        fprintf(stderr,"cannot open '%s': %s\n", path, strerror(errno));
+		pps_fprintf/*fprintf*/(stderr,"cannot open '%s': %s\n", path, strerror(errno));
         return -1;
     }
 
@@ -258,7 +258,7 @@ static int write_data_file(int fd, const char *path, syncsendbuf *sbuf)
         if(ret < 0) {
             if(errno == EINTR)
                 continue;
-            fprintf(stderr,"cannot read '%s': %s\n", path, strerror(errno));
+			pps_fprintf/*fprintf*/(stderr,"cannot read '%s': %s\n", path, strerror(errno));
             break;
         }
 
@@ -359,27 +359,27 @@ static int sync_send(int fd, const char *lpath, const char *rpath,
         // this requires that we read the entire file into memory.
         lfd = adb_open(utf8_lPath.c_str(), O_RDONLY);
         if(lfd < 0) {
-            fprintf(stderr,"cannot open '%s': %s\n", lpath, strerror(errno));
+			pps_fprintf/*fprintf*/(stderr,"cannot open '%s': %s\n", lpath, strerror(errno));
             return -1;
         }
 
         size = adb_lseek(lfd, 0, SEEK_END);
         if (size == -1 || -1 == adb_lseek(lfd, 0, SEEK_SET)) {
-            fprintf(stderr, "error seeking in file '%s'\n", lpath);
+			pps_fprintf/*fprintf*/(stderr, "error seeking in file '%s'\n", lpath);
             adb_close(lfd);
             return 1;
         }
 
         file_buffer = (char *)malloc(size);
         if (file_buffer == NULL) {
-            fprintf(stderr, "could not allocate buffer for '%s'\n",
+			pps_fprintf/*fprintf*/(stderr, "could not allocate buffer for '%s'\n",
                     lpath);
             adb_close(lfd);
             return 1;
         }
         amt = adb_read(lfd, file_buffer, size);
         if (amt != size) {
-            fprintf(stderr, "error reading from file: '%s'\n", lpath);
+			pps_fprintf/*fprintf*/(stderr, "error reading from file: '%s'\n", lpath);
             adb_close(lfd);
             free(file_buffer);
             return 1;
@@ -389,7 +389,7 @@ static int sync_send(int fd, const char *lpath, const char *rpath,
 
         zip = init_zipfile(file_buffer, size);
         if (zip == NULL) {
-            fprintf(stderr, "file '%s' is not a valid zip file\n",
+			pps_fprintf/*fprintf*/(stderr, "file '%s' is not a valid zip file\n",
                     lpath);
             free(file_buffer);
             return 1;
@@ -398,7 +398,7 @@ static int sync_send(int fd, const char *lpath, const char *rpath,
         entry = lookup_zipentry(zip, "AndroidManifest.xml");
         release_zipfile(zip);
         if (entry == NULL) {
-            fprintf(stderr, "file '%s' does not contain AndroidManifest.xml\n",
+			pps_fprintf/*fprintf*/(stderr, "file '%s' does not contain AndroidManifest.xml\n",
                     lpath);
             free(file_buffer);
             return 1;
@@ -445,14 +445,14 @@ static int sync_send(int fd, const char *lpath, const char *rpath,
         } else
             strcpy(sbuf->data, "unknown reason");
 
-        fprintf(stderr,"failed to copy '%s' to '%s': %s\n", lpath, rpath, sbuf->data);
+		pps_fprintf/*fprintf*/(stderr,"failed to copy '%s' to '%s': %s\n", lpath, rpath, sbuf->data);
         return -1;
     }
 
     return 0;
 
 fail:
-    fprintf(stderr,"protocol failure\n");
+	pps_fprintf/*fprintf*/(stderr,"protocol failure\n");
     adb_close(fd);
     return -1;
 }
@@ -504,7 +504,7 @@ int sync_recv(int fd, const char *rpath, const char *lpath)
         mkdirs((char *)lpath);
         lfd = adb_creat(lpath, 0644);
         if(lfd < 0) {
-            fprintf(stderr,"cannot create '%s': %s\n", lpath, strerror(errno));
+			pps_fprintf/*fprintf*/(stderr,"cannot create '%s': %s\n", lpath, strerror(errno));
             return -1;
         }
         goto handle_data;
@@ -523,7 +523,7 @@ int sync_recv(int fd, const char *rpath, const char *lpath)
         if(id == ID_DONE) break;
         if(id != ID_DATA) goto remote_error;
         if(len > SYNC_DATA_MAX) {
-            fprintf(stderr,"data overrun\n");
+			pps_fprintf/*fprintf*/(stderr,"data overrun\n");
             adb_close(lfd);
             return -1;
         }
@@ -534,7 +534,7 @@ int sync_recv(int fd, const char *rpath, const char *lpath)
         }
 
         if(writex(lfd, buffer, len)) {
-            fprintf(stderr,"cannot write '%s': %s\n", rpath, strerror(errno));
+			pps_fprintf/*fprintf*/(stderr,"cannot write '%s': %s\n", rpath, strerror(errno));
             adb_close(lfd);
             return -1;
         }
@@ -561,7 +561,7 @@ remote_error:
         buffer[4] = 0;
 //        strcpy(buffer,"unknown reason");
     }
-    fprintf(stderr,"failed to copy '%s' to '%s': %s\n", rpath, lpath, buffer);
+	pps_fprintf/*fprintf*/(stderr,"failed to copy '%s' to '%s': %s\n", rpath, lpath, buffer);
     return 0;
 }
 
@@ -573,14 +573,14 @@ remote_error:
 static void do_sync_ls_cb(unsigned mode, unsigned size, unsigned time,
                           const char *name, void *cookie)
 {
-    printf("%08x %08x %08x %s\n", mode, size, time, name);
+	pps_fprintf/*fprintf*/(stdout, "%08x %08x %08x %s\n", mode, size, time, name);
 }
 
 int do_sync_ls(const char *path)
 {
     int fd = adb_connect("sync:");
     if(fd < 0) {
-        fprintf(stderr,"error: %s\n", adb_error());
+		pps_fprintf/*fprintf*/(stderr,"error: %s\n", adb_error());
         return 1;
     }
 
@@ -617,7 +617,7 @@ copyinfo *mkcopyinfo(const char *spath, const char *dpath,
 
     copyinfo *ci = (copyinfo *)malloc(sizeof(copyinfo) + ssize + dsize);
     if(ci == 0) {
-        fprintf(stderr,"out of memory\n");
+		pps_fprintf/*fprintf*/(stderr,"out of memory\n");
         abort();
     }
 
@@ -654,7 +654,7 @@ static int local_build_list(copyinfo **filelist,
  //   if(d == 0) {
 	if(_chdir(lpath)) 
     {
-        fprintf(stderr,"cannot open '%s': %s\n", lpath, strerror(errno));
+		pps_fprintf/*fprintf*/(stderr,"cannot open '%s': %s\n", lpath, strerror(errno));
         return -1;
     }
 	else
@@ -696,13 +696,13 @@ static int local_build_list(copyinfo **filelist,
         } else {
             ci = mkcopyinfo(lpath, rpath, utf8name.c_str(), 0);
             if(lstat(ci->src, &st)) {
-                fprintf(stderr,"cannot stat '%s': %s\n", ci->src, strerror(errno));
+				pps_fprintf/*fprintf*/(stderr,"cannot stat '%s': %s\n", ci->src, strerror(errno));
                 //closedir(d);
 				_findclose(hFile);
                 return -1;
             }
             if(!S_ISREG(st.st_mode) && !S_ISLNK(st.st_mode)) {
-                fprintf(stderr, "skipping special file '%s'\n", ci->src);
+				pps_fprintf/*fprintf*/(stderr, "skipping special file '%s'\n", ci->src);
                 free(ci);
             } else {
                 ci->time = st.st_mtime;
@@ -776,7 +776,7 @@ static int copy_local_dir_remote(int fd, const char *lpath, const char *rpath, i
     for(ci = filelist; ci != 0; ci = next) {
         next = ci->next;
         if(ci->flag == 0) {
-            fprintf(stderr,"%spush: %s -> %s\n", listonly ? "would " : "", ci->src, ci->dst);
+			pps_fprintf/*fprintf*/(stderr,"%spush: %s -> %s\n", listonly ? "would " : "", ci->src, ci->dst);
             if(!listonly &&
                sync_send(fd, ci->src, ci->dst, ci->time, ci->mode, 0 /* no verify APK */)){
                 return 1;
@@ -788,7 +788,7 @@ static int copy_local_dir_remote(int fd, const char *lpath, const char *rpath, i
         free(ci);
     }
 
-    fprintf(stderr,"%d file%s pushed. %d file%s skipped.\n",
+	pps_fprintf/*fprintf*/(stderr,"%d file%s pushed. %d file%s skipped.\n",
             pushed, (pushed == 1) ? "" : "s",
             skipped, (skipped == 1) ? "" : "s");
 
@@ -804,12 +804,12 @@ int do_sync_push(const char *lpath, const char *rpath, int verifyApk)
 
     fd = adb_connect("sync:");
     if(fd < 0) {
-        fprintf(stderr,"error: %s\n", adb_error());
+		pps_fprintf/*fprintf*/(stderr,"error: %s\n", adb_error());
         return 1;
     }
 
     if(stat(lpath, &st)) {
-        fprintf(stderr,"cannot stat '%s': %s\n", lpath, strerror(errno));
+		pps_fprintf/*fprintf*/(stderr,"cannot stat '%s': %s\n", lpath, strerror(errno));
         sync_quit(fd);
         return 1;
     }
@@ -892,7 +892,7 @@ sync_ls_build_list_cb(unsigned mode, unsigned size, unsigned time,
         ci->next = *filelist;
         *filelist = ci;
     } else {
-        fprintf(stderr, "skipping special file '%s'\n", name);
+		pps_fprintf/*fprintf*/(stderr, "skipping special file '%s'\n", name);
     }
 }
 
@@ -950,7 +950,7 @@ static int copy_remote_dir_local(int fd, const char *rpath, const char *lpath,
         lpath = tmp;
     }
 
-    fprintf(stderr, "pull: building file list...\n");
+	pps_fprintf/*fprintf*/(stderr, "pull: building file list...\n");
     /* Recursively build the list of files to copy. */
     if (remote_build_list(fd, &filelist, rpath, lpath)) {
         return -1;
@@ -979,7 +979,7 @@ static int copy_remote_dir_local(int fd, const char *rpath, const char *lpath,
     for (ci = filelist; ci != 0; ci = next) {
         next = ci->next;
         if (ci->flag == 0) {
-            fprintf(stderr, "pull: %s -> %s\n", ci->src, ci->dst);
+			pps_fprintf/*fprintf*/(stderr, "pull: %s -> %s\n", ci->src, ci->dst);
             if (sync_recv(fd, ci->src, ci->dst)) {
                 return 1;
             }
@@ -990,7 +990,7 @@ static int copy_remote_dir_local(int fd, const char *rpath, const char *lpath,
         free(ci);
     }
 
-    fprintf(stderr, "%d file%s pulled. %d file%s skipped.\n",
+	pps_fprintf/*fprintf*/(stderr, "%d file%s pulled. %d file%s skipped.\n",
             pulled, (pulled == 1) ? "" : "s",
             skipped, (skipped == 1) ? "" : "s");
 
@@ -1006,7 +1006,7 @@ int do_sync_pull(const char *rpath, const char *lpath)
 
     fd = adb_connect("sync:");
     if(fd < 0) {
-        fprintf(stderr,"error: %s\n", adb_error());
+		pps_fprintf/*fprintf*/(stderr,"error: %s\n", adb_error());
         return 1;
     }
 
@@ -1014,7 +1014,7 @@ int do_sync_pull(const char *rpath, const char *lpath)
         return 1;
     }
     if(mode == 0) {
-        fprintf(stderr,"remote object '%s' does not exist\n", rpath);
+		pps_fprintf/*fprintf*/(stderr,"remote object '%s' does not exist\n", rpath);
         return 1;
     }
 
@@ -1055,18 +1055,18 @@ int do_sync_pull(const char *rpath, const char *lpath)
             return 0;
         }
     } else {
-        fprintf(stderr,"remote object '%s' not a file or directory\n", rpath);
+		pps_fprintf/*fprintf*/(stderr,"remote object '%s' not a file or directory\n", rpath);
         return 1;
     }
 }
 
 int do_sync_sync(const char *lpath, const char *rpath, int listonly)
 {
-    fprintf(stderr,"syncing %s...\n",rpath);
+	pps_fprintf/*fprintf*/(stderr,"syncing %s...\n",rpath);
 
     int fd = adb_connect("sync:");
     if(fd < 0) {
-        fprintf(stderr,"error: %s\n", adb_error());
+		pps_fprintf/*fprintf*/(stderr,"error: %s\n", adb_error());
         return 1;
     }
 

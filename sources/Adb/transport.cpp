@@ -916,7 +916,9 @@ static void add_qual(char **buf, size_t *buf_size,
     if (!buf || !*buf || !buf_size || !*buf_size || !qual || !*qual)
         return;
 
-    len = snprintf(*buf, *buf_size, "%s%n%s", prefix, &prefix_len, qual);
+	prefix_len = strlen(prefix);
+	len = snprintf(*buf, *buf_size, "%s%s", prefix, qual);
+    //len = snprintf(*buf, *buf_size, "%s%n%s", prefix, &prefix_len, qual);
 
     if (sanitize_qual) {
         char *cp;

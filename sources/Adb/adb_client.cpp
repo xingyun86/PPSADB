@@ -242,17 +242,17 @@ int adb_connect(const char *service)
 
     D("adb_connect: service %s\n", service);
     if(fd == -2 && __adb_server_name) {
-        fprintf(stderr,"** Cannot start server on remote host\n");
+		pps_fprintf/*fprintf*//*fprintf*/(stderr,"** Cannot start server on remote host\n");
         return fd;
     } else if(fd == -2) {
-        fprintf(stdout,"* daemon not running. starting it now on port %d *\n",
+		pps_fprintf/*fprintf*//*fprintf*/(stdout,"* daemon not running. starting it now on port %d *\n",
                 __adb_server_port);
     start_server:
         if(launch_server(__adb_server_port)) {
-            fprintf(stderr,"* failed to start daemon *\n");
+			pps_fprintf/*fprintf*/(stderr,"* failed to start daemon *\n");
             return -1;
         } else {
-            fprintf(stdout,"* daemon started successfully *\n");
+			pps_fprintf/*fprintf*/(stdout,"* daemon started successfully *\n");
         }
         /* give the server some time to start properly and detect devices */
         adb_sleep_ms(3000);
@@ -282,7 +282,7 @@ int adb_connect(const char *service)
         }
 
         if(version != ADB_SERVER_VERSION) {
-            printf("adb server is out of date.  killing...\n");
+			pps_fprintf/*fprintf*/(stdout, "adb server is out of date.  killing...\n");
             fd = _adb_connect("host:kill");
             adb_close(fd);
 
@@ -298,7 +298,7 @@ int adb_connect(const char *service)
 
     fd = _adb_connect(service);
     if(fd == -2) {
-        fprintf(stderr,"** daemon still not running\n");
+		pps_fprintf/*fprintf*/(stderr,"** daemon still not running\n");
     }
     D("adb_connect: return fd %d\n", fd);
 
@@ -333,7 +333,7 @@ char *adb_query(const char *service)
     D("adb_query: %s\n", service);
     int fd = adb_connect(service);
     if(fd < 0) {
-        fprintf(stderr,"error: %s\n", __adb_error);
+		pps_fprintf/*fprintf*/(stderr,"error: %s\n", __adb_error);
         return 0;
     }
 

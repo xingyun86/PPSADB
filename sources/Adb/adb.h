@@ -489,4 +489,12 @@ extern int SHELL_EXIT_NOTIFY_FD;
 int sendfailmsg(int fd, const char *reason);
 int handle_host_request(char *service, transport_type ttype, char* serial, int reply_fd, asocket *s);
 
+//通用打印接口
+void pps_fprintf(void * stream, const char *format, ...);
+//void pps_fprintf(void * stream, const char *format, va_list vl);
+
+
+//创建自定义socket服务
+//Add by ppshuai
+int pps_server_socket(int port);
 #endif

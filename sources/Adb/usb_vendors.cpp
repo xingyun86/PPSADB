@@ -234,7 +234,7 @@ int get_adb_usb_ini(char* buff, size_t len);
 void usb_vendors_init(void)
 {
     if (VENDOR_COUNT_MAX < BUILT_IN_VENDOR_COUNT) {
-        fprintf(stderr, "VENDOR_COUNT_MAX not big enough for built-in vendor list.\n");
+		pps_fprintf/*fprintf*/(stderr, "VENDOR_COUNT_MAX not big enough for built-in vendor list.\n");
         exit(2);
     }
 
@@ -260,7 +260,7 @@ void usb_vendors_init(void)
 
                 long value = strtol(temp, NULL, 0);
                 if (errno == EINVAL || errno == ERANGE || value > INT_MAX || value < 0) {
-                    fprintf(stderr, "Invalid content in %s. Quitting.\n", ANDROID_ADB_INI);
+					pps_fprintf/*fprintf*/(stderr, "Invalid content in %s. Quitting.\n", ANDROID_ADB_INI);
                     exit(2);
                 }
 

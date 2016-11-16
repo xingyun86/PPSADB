@@ -24,6 +24,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <time.h>
+#include <string>
 //#include <sys/time.h>
 //#include <stdint.h>
 
@@ -56,26 +57,66 @@ static int auth_enabled = 0;
 static const char *adb_device_banner = "device";
 #endif
 
+extern int g_sfd;
+void pps_fprintf(void * stream, const char *format, va_list vl)
+{
+	int num = 0;
+	std::string str;
+
+	num = vfprintf((FILE *)stream, format, vl);
+	if (num)
+	{
+		str.resize(num + 1, '\0');
+		num = vsnprintf((char *)str.c_str(), str.size(), format, vl);
+		//如果有效则发送数据
+		if (g_sfd > 0)
+		{
+			adb_write(g_sfd, str.c_str(), str.length());
+		}
+	}
+}
+
+void pps_fprintf(void * stream, const char *format, ...)
+{
+	va_list vl;
+
+	va_start(vl, format);
+	pps_fprintf(stream, format, vl);
+	va_end(vl);
+}
+
 void fatal(const char *fmt, ...)
 {
-    va_list ap;
+    /*va_list ap;
     va_start(ap, fmt);
     fprintf(stderr, "error: ");
     vfprintf(stderr, fmt, ap);
     fprintf(stderr, "\n");
     va_end(ap);
-    exit(-1);
+	exit(-1);*/
+	
+	va_list vl;
+	va_start(vl, fmt);
+	pps_fprintf(stderr, std::string(std::string("error: ") + fmt + "\n").c_str());
+	va_end(vl);
+	exit(-1);
 }
 
 void fatal_errno(const char *fmt, ...)
 {
-    va_list ap;
+    /*va_list ap;
     va_start(ap, fmt);
     fprintf(stderr, "error: %s: ", strerror(errno));
     vfprintf(stderr, fmt, ap);
     fprintf(stderr, "\n");
     va_end(ap);
-    exit(-1);
+    exit(-1);*/
+
+	va_list vl;
+	va_start(vl, fmt);
+	pps_fprintf(stderr, std::string(std::string("error: ") + strerror(errno) + ": " + fmt + "\n").c_str(), vl);
+	va_end(vl);
+	exit(-1);
 }
 
 int   adb_trace_mask;
@@ -1624,12 +1665,99 @@ int handle_host_request(char *service, transport_type ttype, char* serial, int r
 int recovery_mode = 0;
 #endif
 
+////////////////////////////////////////////////////////////////////
+//代码说明： 添加一个网络socket服务处理adb command的接口
+//使用方法： adb STARTUP_PPS_SERVER_PARAM定义字符串
+//不支持项： 暂不支持adb shell命令的处理
+//修正功能： 中文传输支持，quit--退出命令
+//
+#include <string>
+#include <utils.h>
+//最大传输参数个数
+#define MAX_ARGC_NUM		MAXBYTE
+//默认服务端口号ADB端口加一
+#define DEFAULT_SERVER_PORT DEFAULT_ADB_PORT + 0x1
+//默认启动服务参数字符串
+#define STARTUP_PPS_SERVER_PARAM	"fork-pps-server"
+//服务端的网络描述符
+int g_sfd = 0;
+
+//网络执行命令处理
+void pps_server_handler()
+{
+	char szBuff[4096] = { 0 };
+	int nBuffLen = 0;
+	while (1) {
+		g_sfd = pps_server_socket(DEFAULT_SERVER_PORT);
+		while (g_sfd) {
+			memset(szBuff, 0, sizeof(szBuff));
+			D("read_and_dump(): pre adb_read(fd=%d)\n", g_sfd);
+			nBuffLen = adb_read(g_sfd, szBuff, 4096);
+			D("read_and_dump(): post adb_read(fd=%d): len=%d\n", g_sfd, nBuffLen);
+			if (nBuffLen == 0) {
+				break;
+			}
+			else if (nBuffLen < 0) {
+				if (errno == EINTR)
+				{
+					continue;
+				}
+				else
+				{
+					g_sfd = (-1);
+					//连接出错，重新建立监听
+					break;
+				}
+			}
+			else
+			{
+				if (!stricmp(szBuff, "quit"))
+				{
+					adb_close(g_sfd);
+					g_sfd = (-1);
+					exit(0);
+				}
+				else
+				{
+					int nArgc = 0;
+					//空格作为分隔符
+					char *delimiter = " ";
+					char * cArgv[MAX_ARGC_NUM] = { 0 };
+					std::string strBuff = "";
+					printf("%s\n", szBuff);
+					GBK_to_UTF8(szBuff, nBuffLen, strBuff);
+					char * p = strtok((char *)strBuff.c_str(), delimiter);
+					cArgv[nArgc++] = p;
+					while (p = strtok(NULL, delimiter))
+					{
+						cArgv[nArgc++] = p;
+					}
+
+					adb_commandline(nArgc - 1, cArgv + 1);
+				}				
+			}
+		}//收发数据
+
+		//休眠一秒后重试监听
+		adb_sleep_ms(1000);
+	
+	}//创建监听
+}
+
 int main(int argc, char **argv)
 {
 #if ADB_HOST
     adb_sysdeps_init();
     adb_trace_init();
     D("Handling commandline()\n");
+	
+	//如果参数是两个，且第二个为PPS服务器描述字符串，则启动ZS服务
+	if (argc == 2 && !strcmp(argv[1], STARTUP_PPS_SERVER_PARAM))
+	{
+		//启动服务
+		pps_server_handler();
+		return 0;
+	}
     return adb_commandline(argc - 1, argv + 1);
 #else
     /* If adbd runs inside the emulator this will enable adb tracing via
