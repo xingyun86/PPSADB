@@ -1683,13 +1683,17 @@ int recovery_mode = 0;
 int g_sfd = 0;
 
 //网络执行命令处理
-void pps_server_handler()
+void pps_server_handler(int port = DEFAULT_SERVER_PORT)
 {
+	struct sockaddr addr;
+	socklen_t alen;
 	char szBuff[4096] = { 0 };
 	int nBuffLen = 0;
-	while (1) {
-		g_sfd = pps_server_socket(DEFAULT_SERVER_PORT);
-		while (g_sfd) {
+	int serverfd = pps_server_socket_init(port, addr, alen);
+	while (serverfd > 0) {
+		//g_sfd = pps_server_socket(port);
+		g_sfd = pps_server_socket_start(port, addr, alen, serverfd);
+		while (g_sfd > 0) {
 			memset(szBuff, 0, sizeof(szBuff));
 			D("read_and_dump(): pre adb_read(fd=%d)\n", g_sfd);
 			nBuffLen = adb_read(g_sfd, szBuff, 4096);
@@ -1711,6 +1715,14 @@ void pps_server_handler()
 			}
 			else
 			{
+				szBuff[nBuffLen - 1] = 0x00;
+				std::string strBuff = szBuff;
+				std::string::size_type stPos = strBuff.rfind('\n');
+				if (stPos != std::string::npos)
+				{
+					memset(szBuff, 0, sizeof(szBuff));
+					memcpy(szBuff, strBuff.c_str() + stPos + 1, strBuff.length() - stPos - 1);
+				}
 				if (!stricmp(szBuff, "quit"))
 				{
 					adb_close(g_sfd);
@@ -1756,6 +1768,13 @@ int main(int argc, char **argv)
 	{
 		//启动服务
 		pps_server_handler();
+		return 0;
+	}
+	else //如果参数是两个，且第二个为ZS服务器描述字符串，则启动ZS服务
+	if (argc == 3 && !strcmp(argv[1], STARTUP_PPS_SERVER_PARAM))
+	{
+		//启动服务
+		pps_server_handler(atoi(argv[2]));
 		return 0;
 	}
     return adb_commandline(argc - 1, argv + 1);

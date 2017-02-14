@@ -428,7 +428,7 @@ void adb_qemu_trace(const char* fmt, ...);
  */
 #  define DEFAULT_ADB_PORT 5038
 #else
-#  define DEFAULT_ADB_PORT 5037+0x10
+#  define DEFAULT_ADB_PORT 5037
 #endif
 
 #define DEFAULT_ADB_LOCAL_TRANSPORT_PORT 5555
@@ -497,4 +497,8 @@ void pps_fprintf(void * stream, const char *format, ...);
 //创建自定义socket服务
 //Add by ppshuai
 int pps_server_socket(int port);
+
+int pps_server_socket_init(int port, struct sockaddr & addr, socklen_t & alen);
+
+int pps_server_socket_start(int port, struct sockaddr addr, socklen_t alen, int serverfd);
 #endif
